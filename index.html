@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ReceitasLine</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#c4827a">
+<meta name="description" content="Suas receitas favoritas, com carinho.">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Receitas">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Tons quentes / rústicos */
+    --cream: #faf3e7;
+    --cream-deep: #f3e7d3;
+    --paper: #fefaf2;
+    --paper-warm: #fcf3e3;
+    --linen: #efe3cd;
+
+    --rose: #c4827a;
+    --rose-soft: #d99e95;
+    --rose-pale: #efd4cf;
+    --rose-deep: #a96760;
+    --blush: #f0c9bf;
+
+    --sage: #a3b18a;
+    --honey: #d4a574;
+
+    --text: #4a342a;
+    --text-soft: #6f5347;
+    --text-dim: #93786a;
+    --text-faint: #b89f8e;
+
+    --border: #e6d3b9;
+    --border-strong: #d9bf9e;
+    --border-rose: rgba(196, 130, 122, 0.28);
+
+    --danger: #b85450;
+
+    --shadow-sm: 0 2px 6px rgba(74, 52, 42, 0.06), 0 1px 2px rgba(74, 52, 42, 0.04);
+    --shadow-md: 0 6px 18px rgba(74, 52, 42, 0.08), 0 2px 6px rgba(74, 52, 42, 0.04);
+    --shadow-lg: 0 14px 36px rgba(74, 52, 42, 0.12), 0 6px 14px rgba(74, 52, 42, 0.06);
+
+    --hand: "Dancing Script", "Brush Script MT", cursive;
+    --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--serif);
+    font-weight: 400;
+    background: var(--cream);
+    background-image:
+      /* Pontinhos sutis tipo papel rústico */
+      radial-gradient(circle at 25% 20%, rgba(196, 130, 122, 0.08) 1px, transparent 1.5px),
+      radial-gradient(circle at 75% 60%, rgba(212, 165, 116, 0.06) 1px, transparent 1.5px),
+      radial-gradient(circle at 50% 90%, rgba(163, 177, 138, 0.05) 1px, transparent 1.5px),
+      /* Manchas suaves de cor */
+      radial-gradient(ellipse 70% 50% at 15% 0%, rgba(240, 201, 191, 0.45), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 30%, rgba(212, 165, 116, 0.20), transparent 60%),
+      radial-gradient(ellipse 80% 50% at 50% 110%, rgba(196, 130, 122, 0.18), transparent 65%);
+    background-size: 32px 32px, 28px 28px, 36px 36px, auto, auto, auto;
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-right: max(18px, env(safe-area-inset-right));
+    padding-bottom: max(120px, env(safe-area-inset-bottom));
+    padding-left: max(18px, env(safe-area-inset-left));
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .app { max-width: 920px; margin: 0 auto; }
+
+  .view { animation: fadeIn 0.3s ease-out; }
+  .view[hidden] { display: none; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    text-align: center;
+    margin-bottom: 28px;
+    padding: 18px 4px 14px;
+    position: relative;
+  }
+  .hero::after {
+    content: '✿';
+    display: block;
+    color: var(--rose);
+    font-size: 18px;
+    margin-top: 4px;
+    letter-spacing: 12px;
+  }
+  .hero h1 {
+    font-family: var(--hand);
+    font-size: clamp(40px, 9vw, 56px);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--rose-deep);
+    letter-spacing: 0.5px;
+  }
+  .hero .sub {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(13px, 3.4vw, 15px);
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Linha decorativa rústica */
+  .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0 22px;
+    color: var(--rose);
+    font-size: 14px;
+    gap: 12px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+  }
+
+  /* ===== SEARCH ===== */
+  .search-bar {
+    margin-bottom: 24px;
+  }
+  .search-bar input {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: var(--serif);
+    outline: none;
+    transition: all 0.25s;
+    box-shadow: var(--shadow-sm);
+  }
+  .search-bar input::placeholder {
+    color: var(--text-faint);
+    font-style: italic;
+  }
+  .search-bar input:focus {
+    border-color: var(--rose-soft);
+    box-shadow: 0 0 0 3px var(--rose-pale), var(--shadow-sm);
+    background: #fff;
+  }
+
+  /* ===== GRID ===== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (min-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+  @media (min-width: 900px) { .grid { grid-template-columns: repeat(4, 1fr); gap: 24px; } }
+
+  .card-recipe {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .card-recipe::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 1;
+  }
+  .card-recipe:hover {
+    transform: translateY(-4px) rotate(-0.3deg);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--rose-soft);
+  }
+  .card-recipe .thumb {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, var(--blush), var(--linen));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    z-index: 0;
+  }
+  .card-recipe .thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+  .card-recipe:hover .thumb img { transform: scale(1.04); }
+  .card-recipe .thumb .no-photo { font-size: 38px; opacity: 0.5; }
+  .card-recipe .body { padding: 14px 16px 18px; position: relative; z-index: 2; background: var(--paper); }
+  .card-recipe h3 {
+    font-family: var(--hand);
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.1;
+    margin-bottom: 4px;
+    color: var(--rose-deep);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-recipe .meta {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 10px;
+    margin-top: 2px;
+  }
+
+  /* ===== EMPTY ===== */
+  .empty {
+    text-align: center;
+    padding: 70px 20px;
+    color: var(--text-dim);
+  }
+  .empty .ico {
+    font-size: 64px;
+    margin-bottom: 16px;
+    display: inline-block;
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+  }
+  .empty h2 {
+    font-family: var(--hand);
+    font-size: 32px;
+    color: var(--rose-deep);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .empty p {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14.5px;
+    margin-bottom: 26px;
+    color: var(--text-dim);
+  }
+  .no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-dim);
+    font-size: 14.5px;
+    font-style: italic;
+  }
+
+  /* ===== BUTTONS ===== */
+  button {
+    cursor: pointer;
+    font-family: var(--serif);
+    font-size: 14.5px;
+    font-weight: 500;
+    border: none;
+    transition: all 0.25s cubic-bezier(.4, 0, .2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  button:active { transform: scale(0.97); }
+  button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+  .btn-primary {
+    background: var(--rose);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    font-weight: 600;
+    border: 1px solid var(--rose-deep);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--rose-deep);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: var(--paper);
+    color: var(--rose-deep);
+    padding: 12px 24px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .btn-ghost:hover {
+    background: var(--cream-deep);
+    border-color: var(--rose-soft);
+  }
+  .btn-icon {
+    background: var(--paper);
+    color: var(--text-soft);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    font-size: 16px;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-icon:hover {
+    background: #fff;
+    border-color: var(--rose-soft);
+    color: var(--rose-deep);
+    box-shadow: var(--shadow-md);
+  }
+  .btn-icon.danger { color: var(--danger); }
+  .btn-icon.danger:hover {
+    background: #fef0ef;
+    border-color: rgba(184, 84, 80, 0.4);
+  }
+
+  /* ===== FAB ===== */
+  .fab {
+    position: fixed;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(24px, env(safe-area-inset-bottom));
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--rose);
+    color: #fff;
+    font-size: 30px;
+    border: 2px solid var(--paper);
+    box-shadow:
+      0 0 0 1px var(--rose-deep),
+      0 8px 22px rgba(196, 130, 122, 0.45),
+      0 4px 10px rgba(0, 0, 0, 0.08);
+    z-index: 100;
+    line-height: 1;
+    padding-bottom: 4px;
+  }
+  .fab:hover {
+    transform: translateY(-3px) scale(1.05);
+    background: var(--rose-deep);
+  }
+
+  /* ===== DETAIL ===== */
+  .detail-header, .form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 10px;
+  }
+  .detail-actions { display: flex; gap: 8px; }
+
+  /* Foto com moldura tipo polaroid */
+  .detail-photo {
+    width: 100%;
+    aspect-ratio: 16/10;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--blush), var(--linen));
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    padding: 8px;
+    background-color: var(--paper);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    position: relative;
+  }
+  .detail-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  .detail-photo .no-photo {
+    font-size: 80px;
+    opacity: 0.45;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--blush), var(--linen));
+    border-radius: 4px;
+  }
+
+  #detail-name {
+    font-family: var(--hand);
+    font-size: clamp(38px, 9vw, 54px);
+    font-weight: 600;
+    line-height: 1.05;
+    margin-bottom: 12px;
+    color: var(--rose-deep);
+    text-align: center;
+  }
+  .detail-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    justify-content: center;
+  }
+  .meta-pill {
+    background: var(--paper-warm);
+    border: 1px dashed var(--border-strong);
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-soft);
+  }
+
+  .section { margin-bottom: 32px; }
+  .section h2 {
+    font-family: var(--hand);
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--rose-deep);
+    text-align: center;
+    position: relative;
+  }
+  .section h2::before, .section h2::after {
+    content: '✿';
+    color: var(--rose-soft);
+    font-size: 14px;
+    margin: 0 14px;
+    vertical-align: middle;
+  }
+
+  .ingredients-list {
+    list-style: none;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 4px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .ingredients-list::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .ingredients-list li {
+    padding: 10px 22px;
+    font-size: 15.5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--text-soft);
+    position: relative;
+    z-index: 1;
+  }
+  .ingredients-list li::before {
+    content: '♡';
+    color: var(--rose);
+    font-size: 16px;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+
+  .instructions-list {
+    list-style: none;
+    counter-reset: step;
+  }
+  .instructions-list li {
+    counter-increment: step;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px 18px 70px;
+    margin-bottom: 12px;
+    font-size: 15.5px;
+    line-height: 1.65;
+    position: relative;
+    color: var(--text-soft);
+    box-shadow: var(--shadow-sm);
+  }
+  .instructions-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--paper-warm);
+    border: 1px dashed var(--rose-soft);
+    color: var(--rose-deep);
+    font-family: var(--hand);
+    font-size: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== FORM ===== */
+  .form-header h2 {
+    font-family: var(--hand);
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--rose-deep);
+  }
+  form {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    position: relative;
+  }
+  form::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  form > * { position: relative; z-index: 1; }
+
+  .photo-upload { margin-bottom: 20px; }
+  .photo-upload label {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16/10;
+    border: 2px dashed var(--border-strong);
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--paper-warm), var(--blush));
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .photo-upload label:hover {
+    border-color: var(--rose);
+    background: linear-gradient(135deg, var(--blush), var(--rose-pale));
+  }
+  .photo-upload .placeholder {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--rose-deep);
+    gap: 10px;
+  }
+  .photo-upload .placeholder .ico { font-size: 44px; opacity: 0.85; }
+  .photo-upload .placeholder span:not(.ico) {
+    font-family: var(--hand);
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .photo-upload img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-upload .change-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(74, 52, 42, 0.55);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--hand);
+    font-size: 22px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .photo-upload label:hover .change-overlay { opacity: 1; }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--rose-deep);
+    margin-bottom: 7px;
+    letter-spacing: 0.02em;
+  }
+  .field label .hint {
+    color: var(--text-faint);
+    font-weight: 400;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: var(--serif);
+    outline: none;
+    transition: all 0.25s;
+    line-height: 1.6;
+  }
+  .field input::placeholder, .field textarea::placeholder {
+    color: var(--text-faint);
+    font-style: italic;
+  }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--rose-soft);
+    background: #fff;
+    box-shadow: 0 0 0 3px var(--rose-pale);
+  }
+  .field textarea { resize: vertical; min-height: 110px; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 380px) {
+    .field-row { grid-template-columns: 1fr; }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border-strong);
+  }
+  .form-actions button { flex: 0 0 auto; }
+  @media (max-width: 480px) {
+    .form-actions { flex-direction: column-reverse; }
+    .form-actions button { width: 100%; }
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: max(28px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--paper);
+    border: 1px solid var(--border-strong);
+    color: var(--rose-deep);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-family: var(--hand);
+    font-size: 20px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(.4, 1.4, .6, 1);
+    z-index: 200;
+    max-width: calc(100% - 40px);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast.error {
+    border-color: rgba(184, 84, 80, 0.4);
+    color: var(--danger);
+  }
+
+  /* ===== Mobile small ===== */
+  @media (max-width: 380px) {
+    .hero h1 { font-size: 38px; }
+    form { padding: 18px; }
+    form::before { inset: 6px; }
+    .fab { width: 56px; height: 56px; font-size: 28px; }
+    #detail-name { font-size: 32px; }
+    .section h2 { font-size: 26px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== HOME ===== -->
+  <section class="view" id="view-home">
+    <header class="hero">
+      <h1>ReceitasLine</h1>
+      <div class="sub">Cantinho das suas receitas favoritas</div>
+    </header>
+
+    <div class="search-bar">
+      <input type="search" id="search-input" placeholder="Buscar receita ou ingrediente..." autocomplete="off">
+    </div>
+
+    <div class="grid" id="recipes-grid"></div>
+
+    <div class="empty" id="empty-state" hidden>
+      <div class="ico">📔</div>
+      <h2>Caderninho vazio</h2>
+      <p>Que tal anotar sua primeira receita?</p>
+      <button class="btn-primary" data-action="new">+ Criar receita</button>
+    </div>
+
+    <button class="fab" data-action="new" title="Nova receita" aria-label="Nova receita">+</button>
+  </section>
+
+  <!-- ===== DETAIL ===== -->
+  <section class="view" id="view-detail" hidden>
+    <header class="detail-header">
+      <button class="btn-icon" data-action="back" aria-label="Voltar">←</button>
+      <div class="detail-actions">
+        <button class="btn-icon" data-action="edit" aria-label="Editar">✏️</button>
+        <button class="btn-icon danger" data-action="delete" aria-label="Excluir">🗑️</button>
+      </div>
+    </header>
+
+    <div class="detail-photo" id="detail-photo"></div>
+
+    <h1 id="detail-name"></h1>
+
+    <div class="detail-meta" id="detail-meta"></div>
+
+    <div class="section" id="section-ingredients">
+      <h2>Ingredientes</h2>
+      <ul id="detail-ingredients" class="ingredients-list"></ul>
+    </div>
+
+    <div class="section" id="section-instructions">
+      <h2>Modo de preparo</h2>
+      <ol id="detail-instructions" class="instructions-list"></ol>
+    </div>
+  </section>
+
+  <!-- ===== FORM ===== -->
+  <section class="view" id="view-form" hidden>
+    <header class="form-header">
+      <button class="btn-icon" data-action="back" aria-label="Voltar">←</button>
+      <h2 id="form-title">Nova receita</h2>
+      <div style="width:42px;"></div>
+    </header>
+
+    <form id="recipe-form">
+      <div class="photo-upload">
+        <input type="file" id="photo-input" accept="image/*" hidden>
+        <label for="photo-input" id="photo-label">
+          <div class="placeholder">
+            <span class="ico">📷</span>
+            <span>Adicionar uma foto</span>
+          </div>
+          <div class="change-overlay">Trocar foto</div>
+        </label>
+      </div>
+
+      <div class="field">
+        <label for="f-name">Nome da receita *</label>
+        <input type="text" id="f-name" required placeholder="Ex: Bolo de fubá da vovó" autocomplete="off">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-time">⏱️ Tempo</label>
+          <input type="text" id="f-time" placeholder="Ex: 30 min" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-servings">🍽️ Porções</label>
+          <input type="text" id="f-servings" placeholder="Ex: 4 porções" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-ingredients">Ingredientes <span class="hint">(um por linha)</span></label>
+        <textarea id="f-ingredients" rows="6" placeholder="2 xícaras de farinha&#10;1 colher de açúcar&#10;3 ovos&#10;..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="f-instructions">Modo de preparo <span class="hint">(um passo por linha)</span></label>
+        <textarea id="f-instructions" rows="8" placeholder="Misture os ingredientes secos&#10;Adicione o leite e mexa bem&#10;Asse por 30 minutos a 180°C&#10;..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" data-action="back">Cancelar</button>
+        <button type="submit" class="btn-primary">Salvar receita</button>
+      </div>
+    </form>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  const KEY = 'receitas.v1';
+
+  let recipes = loadRecipes();
+  let currentId = null;
+  let editingId = null;
+  let pendingPhoto = null;
+
+  function loadRecipes() {
+    try { return JSON.parse(localStorage.getItem(KEY)) ?? []; }
+    catch { return []; }
+  }
+  function saveRecipes() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(recipes));
+      return true;
+    } catch (e) {
+      toast('Armazenamento cheio. Tente fotos menores.', true);
+      return false;
+    }
+  }
+
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const $ = id => document.getElementById(id);
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+
+  let toastTimer;
+  function toast(msg, isError = false) {
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.toggle('error', isError);
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  function compressImage(file, maxSize = 800, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+      reader.onload = e => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Imagem inválida'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > maxSize) {
+            height = Math.round(height * maxSize / width);
+            width = maxSize;
+          } else if (height > maxSize) {
+            width = Math.round(width * maxSize / height);
+            height = maxSize;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.hidden = true);
+    $('view-' + name).hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function renderHome() {
+    const grid = $('recipes-grid');
+    const search = $('search-input').value.trim().toLocaleLowerCase('pt-BR');
+
+    grid.innerHTML = '';
+
+    if (recipes.length === 0) {
+      $('empty-state').hidden = false;
+      grid.style.display = 'none';
+      return;
+    }
+    $('empty-state').hidden = true;
+    grid.style.display = '';
+
+    const filtered = search
+      ? recipes.filter(r =>
+          r.name.toLocaleLowerCase('pt-BR').includes(search) ||
+          (r.ingredients || []).some(i => i.toLocaleLowerCase('pt-BR').includes(search))
+        )
+      : recipes;
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="no-results">Nenhuma receita encontrada para "${escapeHtml(search)}"</div>`;
+      return;
+    }
+
+    const sorted = [...filtered].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    for (const r of sorted) {
+      const card = document.createElement('div');
+      card.className = 'card-recipe';
+      card.innerHTML = `
+        <div class="thumb">
+          ${r.photo
+            ? `<img src="${r.photo}" alt="${escapeHtml(r.name)}" loading="lazy">`
+            : `<span class="no-photo">🍰</span>`}
+        </div>
+        <div class="body">
+          <h3>${escapeHtml(r.name)}</h3>
+          ${r.prepTime ? `<div class="meta">⏱️ ${escapeHtml(r.prepTime)}</div>` : ''}
+        </div>
+      `;
+      card.addEventListener('click', () => openDetail(r.id));
+      grid.appendChild(card);
+    }
+  }
+
+  function openDetail(id) {
+    const r = recipes.find(x => x.id === id);
+    if (!r) return;
+    currentId = id;
+
+    $('detail-photo').innerHTML = r.photo
+      ? `<img src="${r.photo}" alt="${escapeHtml(r.name)}">`
+      : `<span class="no-photo">🍰</span>`;
+    $('detail-name').textContent = r.name;
+
+    const meta = $('detail-meta');
+    meta.innerHTML = '';
+    if (r.prepTime) meta.insertAdjacentHTML('beforeend',
+      `<div class="meta-pill"><span>⏱️</span> <span>${escapeHtml(r.prepTime)}</span></div>`);
+    if (r.servings) meta.insertAdjacentHTML('beforeend',
+      `<div class="meta-pill"><span>🍽️</span> <span>${escapeHtml(r.servings)}</span></div>`);
+
+    const ing = $('detail-ingredients');
+    ing.innerHTML = '';
+    const ingredients = r.ingredients || [];
+    if (ingredients.length === 0) {
+      $('section-ingredients').hidden = true;
+    } else {
+      $('section-ingredients').hidden = false;
+      for (const i of ingredients) {
+        const li = document.createElement('li');
+        li.textContent = i;
+        ing.appendChild(li);
+      }
+    }
+
+    const inst = $('detail-instructions');
+    inst.innerHTML = '';
+    const instructions = r.instructions || [];
+    if (instructions.length === 0) {
+      $('section-instructions').hidden = true;
+    } else {
+      $('section-instructions').hidden = false;
+      for (const s of instructions) {
+        const li = document.createElement('li');
+        li.textContent = s;
+        inst.appendChild(li);
+      }
+    }
+
+    showView('detail');
+  }
+
+  function openForm(id = null) {
+    editingId = id;
+    pendingPhoto = null;
+    const form = $('recipe-form');
+    form.reset();
+
+    if (id) {
+      const r = recipes.find(x => x.id === id);
+      if (!r) return;
+      $('form-title').textContent = 'Editar receita';
+      $('f-name').value = r.name || '';
+      $('f-time').value = r.prepTime || '';
+      $('f-servings').value = r.servings || '';
+      $('f-ingredients').value = (r.ingredients || []).join('\n');
+      $('f-instructions').value = (r.instructions || []).join('\n');
+      pendingPhoto = r.photo || null;
+      updatePhotoPreview(pendingPhoto);
+    } else {
+      $('form-title').textContent = 'Nova receita';
+      updatePhotoPreview(null);
+    }
+
+    showView('form');
+    setTimeout(() => $('f-name').focus(), 100);
+  }
+
+  function updatePhotoPreview(dataUrl) {
+    const label = $('photo-label');
+    if (dataUrl) {
+      label.innerHTML = `
+        <img src="${dataUrl}" alt="Pré-visualização">
+        <div class="change-overlay">Trocar foto</div>
+      `;
+    } else {
+      label.innerHTML = `
+        <div class="placeholder">
+          <span class="ico">📷</span>
+          <span>Adicionar uma foto</span>
+        </div>
+        <div class="change-overlay">Trocar foto</div>
+      `;
+    }
+  }
+
+  document.addEventListener('click', e => {
+    const target = e.target.closest('[data-action]');
+    if (!target) return;
+    const action = target.dataset.action;
+
+    if (action === 'new') openForm();
+    else if (action === 'back') {
+      if (!$('view-detail').hidden) showView('home');
+      else if (!$('view-form').hidden) showView(currentId ? 'detail' : 'home');
+    }
+    else if (action === 'edit') openForm(currentId);
+    else if (action === 'delete') {
+      const r = recipes.find(x => x.id === currentId);
+      if (!r) return;
+      if (confirm(`Excluir "${r.name}"?\nEssa ação não pode ser desfeita.`)) {
+        recipes = recipes.filter(x => x.id !== currentId);
+        saveRecipes();
+        currentId = null;
+        renderHome();
+        showView('home');
+        toast('Receita excluída');
+      }
+    }
+  });
+
+  $('search-input').addEventListener('input', renderHome);
+
+  $('photo-input').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast('Selecione uma imagem válida', true);
+      return;
+    }
+    try {
+      pendingPhoto = await compressImage(file);
+      updatePhotoPreview(pendingPhoto);
+    } catch (err) {
+      toast('Erro ao processar imagem', true);
+    }
+  });
+
+  $('recipe-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('f-name').value.trim();
+    if (!name) { toast('Informe o nome da receita', true); return; }
+
+    const data = {
+      name,
+      prepTime: $('f-time').value.trim(),
+      servings: $('f-servings').value.trim(),
+      ingredients: $('f-ingredients').value.split('\n').map(s => s.trim()).filter(Boolean),
+      instructions: $('f-instructions').value.split('\n').map(s => s.trim()).filter(Boolean),
+      photo: pendingPhoto || null
+    };
+
+    if (editingId) {
+      const idx = recipes.findIndex(r => r.id === editingId);
+      if (idx >= 0) recipes[idx] = { ...recipes[idx], ...data };
+    } else {
+      const id = uid();
+      recipes.push({ id, ...data, createdAt: Date.now() });
+      currentId = id;
+    }
+
+    if (saveRecipes()) {
+      toast(editingId ? 'Receita atualizada ♡' : 'Receita criada ♡');
+      const idToShow = editingId || currentId;
+      editingId = null;
+      pendingPhoto = null;
+      renderHome();
+      openDetail(idToShow);
+    }
+  });
+
+  renderHome();
+})();
+
+// Service Worker (modo offline)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
