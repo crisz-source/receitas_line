@@ -1,6 +1,6 @@
 {
   "name": "ReceitasLine",
-  "short_name": "Receitas",
+  "short_name": "ReceitasLine",
   "description": "Suas receitas favoritas, com carinho.",
   "start_url": "./",
   "scope": "./",
