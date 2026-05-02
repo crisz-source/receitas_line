@@ -681,6 +681,71 @@
     .form-actions button { width: 100%; }
   }
 
+  /* ===== PAGINAÇÃO ===== */
+  .pagination-home {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .pagination-home[hidden] { display: none; }
+  .page-btn {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .page-btn:hover:not(:disabled) {
+    background: var(--cream-deep);
+    border-color: var(--rose-soft);
+    color: var(--rose-deep);
+  }
+  .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .page-numbers {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .page-num {
+    background: transparent;
+    color: var(--text-dim);
+    min-width: 40px;
+    height: 40px;
+    padding: 0 10px;
+    border-radius: 50%;
+    font-family: var(--hand);
+    font-size: 22px;
+    font-weight: 500;
+    border: 1px solid transparent;
+  }
+  .page-num:hover {
+    background: var(--cream-deep);
+    color: var(--rose-deep);
+  }
+  .page-num.active {
+    background: var(--rose);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(196, 130, 122, 0.35);
+  }
+  .page-num.active:hover { background: var(--rose-deep); }
+  .page-ellipsis {
+    color: var(--text-faint);
+    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--hand);
+    font-size: 22px;
+  }
+
   /* ===== TOAST ===== */
   .toast {
     position: fixed;
@@ -745,6 +810,12 @@
     </div>
 
     <div class="grid" id="recipes-grid"></div>
+
+    <div class="pagination-home" id="home-pagination" hidden>
+      <button class="page-btn" id="home-page-prev" title="Anterior" aria-label="Página anterior">‹</button>
+      <div class="page-numbers" id="home-page-numbers"></div>
+      <button class="page-btn" id="home-page-next" title="Próxima" aria-label="Próxima página">›</button>
+    </div>
 
     <div class="empty" id="empty-state" hidden>
       <div class="ico">📔</div>
@@ -849,6 +920,9 @@
   let editingId = null;
   let pendingPhoto = null;
 
+  const PAGE_SIZE = 6;
+  let homePage = 1;
+
   function loadRecipes() {
     try { return JSON.parse(localStorage.getItem(KEY)) ?? []; }
     catch { return []; }
@@ -919,6 +993,7 @@
     const search = $('search-input').value.trim().toLocaleLowerCase('pt-BR');
 
     grid.innerHTML = '';
+    $('home-pagination').hidden = true;
 
     if (recipes.length === 0) {
       $('empty-state').hidden = false;
@@ -942,7 +1017,13 @@
 
     const sorted = [...filtered].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-    for (const r of sorted) {
+    const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+    if (homePage > totalPages) homePage = totalPages;
+    if (homePage < 1) homePage = 1;
+    const start = (homePage - 1) * PAGE_SIZE;
+    const pageItems = sorted.slice(start, start + PAGE_SIZE);
+
+    for (const r of pageItems) {
       const card = document.createElement('div');
       card.className = 'card-recipe';
       card.innerHTML = `
@@ -958,6 +1039,43 @@
       `;
       card.addEventListener('click', () => openDetail(r.id));
       grid.appendChild(card);
+    }
+
+    renderHomePagination(totalPages);
+  }
+
+  function renderHomePagination(totalPages) {
+    const wrap = $('home-pagination');
+    if (totalPages <= 1) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+
+    $('home-page-prev').disabled = homePage <= 1;
+    $('home-page-next').disabled = homePage >= totalPages;
+
+    const nums = $('home-page-numbers');
+    nums.innerHTML = '';
+
+    const pages = new Set([1, totalPages, homePage, homePage - 1, homePage + 1]);
+    const visible = [...pages].filter(p => p >= 1 && p <= totalPages).sort((a, b) => a - b);
+
+    let prev = 0;
+    for (const p of visible) {
+      if (p - prev > 1) {
+        const dots = document.createElement('span');
+        dots.className = 'page-ellipsis';
+        dots.textContent = '…';
+        nums.appendChild(dots);
+      }
+      const btn = document.createElement('button');
+      btn.className = 'page-num' + (p === homePage ? ' active' : '');
+      btn.textContent = p;
+      btn.addEventListener('click', () => {
+        homePage = p;
+        renderHome();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      nums.appendChild(btn);
+      prev = p;
     }
   }
 
@@ -1078,7 +1196,18 @@
     }
   });
 
-  $('search-input').addEventListener('input', renderHome);
+  $('search-input').addEventListener('input', () => { homePage = 1; renderHome(); });
+
+  $('home-page-prev').addEventListener('click', () => {
+    homePage--;
+    renderHome();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  $('home-page-next').addEventListener('click', () => {
+    homePage++;
+    renderHome();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 
   $('photo-input').addEventListener('change', async e => {
     const file = e.target.files[0];
